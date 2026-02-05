@@ -6,11 +6,11 @@
   <title>💘 Will you be my Valentine?</title>
   <style>
     :root{
-      --turq1:#bff7f2;
-      --turq2:#18c5b7;
+      --turq1:#c9fff8;
+      --turq2:#22d3c5;
       --turq3:#0aa59a;
       --card:#ffffffcc;
-      --text:#0b2b2b;
+      --text:#063232;
     }
     *{ box-sizing:border-box; }
     body{
@@ -46,7 +46,7 @@
       flex-wrap:wrap;
       margin-top: 12px;
       position: relative;
-      min-height: 74px; /* room for the escaping button */
+      min-height: 76px;
     }
 
     button{
@@ -77,7 +77,7 @@
       position: absolute;
       left: 58%;
       top: 0;
-      pointer-events: none;   /* <-- makes it impossible to click */
+      pointer-events: none;   /* <- impossible to click */
     }
 
     .msg{
@@ -99,18 +99,18 @@
       display:none;
     }
 
-    /* Music overlay (optional visible hint) */
     .musicHint{
       margin-top: 14px;
       font-size: 13px;
       opacity: .8;
+      display:none;
     }
   </style>
 </head>
 <body>
   <canvas class="confetti" id="confetti"></canvas>
 
-  <!-- YouTube embed for "As" (note: autoplay with sound may require a tap first) -->
+  <!-- YouTube embed: Autoplay usually requires a tap first -->
   <iframe
     id="yt"
     width="0"
@@ -134,9 +134,7 @@
     <div class="msg" id="msg">YAY!! 🥰 I love you ❤️</div>
     <div class="tiny" id="tiny"></div>
 
-    <div class="musicHint" id="musicHint" style="display:none;">
-      🎵 Playing: “As”
-    </div>
+    <div class="musicHint" id="musicHint">🎵 Playing your song…</div>
   </div>
 
 <script>
@@ -147,7 +145,7 @@
   const tiny = document.getElementById("tiny");
   const musicHint = document.getElementById("musicHint");
 
-  // --- Make the NO button "impossible" AND hilarious: it constantly teleports away
+  // --- Make the NO button "impossible" AND constantly dodging
   function moveNoButton() {
     const area = btnArea.getBoundingClientRect();
     const btn = noBtn.getBoundingClientRect();
@@ -162,23 +160,22 @@
     noBtn.style.top  = y + "px";
   }
 
-  // Keep moving it often + whenever pointer gets near the buttons area
-  let dodgeTimer = setInterval(moveNoButton, 220);
+  // Move often + whenever the area is touched/moused over
+  let dodgeTimer = setInterval(moveNoButton, 180);
   btnArea.addEventListener("mousemove", moveNoButton);
   btnArea.addEventListener("touchstart", moveNoButton, {passive:true});
 
-  // --- Music: YouTube embed (autoplay usually needs a user gesture)
-  // IMPORTANT: Replace VIDEO_ID below with the correct YouTube video id you want to use.
-  // To get it: open the YouTube video → the URL looks like https://www.youtube.com/watch?v=VIDEO_ID
-  const VIDEO_ID = "https://www.youtube.com/watch?v=5PMiSKCETb0";
+  // --- Music: Your YouTube link's video ID
+  const VIDEO_ID = "3V726_HShyY";
   const yt = document.getElementById("yt");
+
   function startMusic() {
-    if (VIDEO_ID === "https://www.youtube.com/watch?v=5PMiSKCETb0") return; // no-op until you set it
+    // loop requires playlist param = same video id
     yt.src = `https://www.youtube.com/embed/${VIDEO_ID}?autoplay=1&loop=1&playlist=${VIDEO_ID}`;
     musicHint.style.display = "block";
   }
 
-  // Start music on first tap/click anywhere (works around autoplay blocking)
+  // Start music on first tap/click anywhere (autoplay policies)
   let musicStarted = false;
   function unlockAudio() {
     if (musicStarted) return;
@@ -196,15 +193,12 @@
     tiny.textContent = "Screenshot this and send it to me 😘";
     launchConfetti();
 
-    // Stop the NO dodging once she said yes
     clearInterval(dodgeTimer);
-
-    // Dim buttons
     btnArea.style.opacity = "0.15";
     btnArea.style.pointerEvents = "none";
   });
 
-  // --- Simple confetti
+  // --- Confetti
   const canvas = document.getElementById("confetti");
   const ctx = canvas.getContext("2d");
   let pieces = [];
