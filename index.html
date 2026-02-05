@@ -3,15 +3,21 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>💘 Will you be my Valentine?</title>
+  <title>💌 Valentine Envelope</title>
   <style>
     :root{
       --turq1:#c9fff8;
       --turq2:#22d3c5;
       --turq3:#0aa59a;
-      --card:#ffffffcc;
+
+      --paper:#fffaf6;
+      --paperShadow: rgba(0,0,0,.15);
+
+      --accentRed:#ff2d6d;
       --text:#063232;
+      --card:#ffffffcc;
     }
+
     *{ box-sizing:border-box; }
     body{
       margin:0;
@@ -24,29 +30,164 @@
       color:var(--text);
       overflow:hidden;
     }
-    .card{
-      width:min(520px, 92vw);
-      background:var(--card);
-      backdrop-filter: blur(10px);
-      border: 2px solid #ffffff66;
-      border-radius: 24px;
-      padding: 28px 22px;
-      box-shadow: 0 18px 60px rgba(0,0,0,.18);
-      text-align:center;
-      position:relative;
+
+    /* ---------- Envelope scene ---------- */
+    .scene{
+      width:min(560px, 94vw);
+      padding: 18px;
+      display:flex;
+      justify-content:center;
+      align-items:center;
     }
-    .heart{ font-size: 52px; line-height:1; }
-    h1{ margin: 8px 0 6px; font-size: clamp(28px, 4vw, 40px); }
-    p{ margin: 0 0 18px; opacity:.9; }
+
+    .envelope-wrap{
+      position:relative;
+      width:min(520px, 92vw);
+      height: 340px;
+      perspective: 1000px;
+      user-select:none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .hint{
+      text-align:center;
+      margin-top: 12px;
+      font-size: 13px;
+      opacity:.85;
+    }
+
+    .envelope{
+      position:absolute;
+      inset:0;
+      border-radius: 26px;
+      background: linear-gradient(180deg, rgba(255,255,255,.55), rgba(255,255,255,.35));
+      box-shadow: 0 22px 70px rgba(0,0,0,.22);
+      border: 2px solid rgba(255,255,255,.55);
+      overflow:hidden;
+      transform-style: preserve-3d;
+      cursor:pointer;
+    }
+
+    /* envelope body */
+    .env-body{
+      position:absolute;
+      inset:0;
+      background: rgba(255,255,255,.35);
+      backdrop-filter: blur(10px);
+    }
+
+    /* bottom triangle */
+    .env-bottom{
+      position:absolute;
+      left:0; right:0; bottom:-40px;
+      height: 220px;
+      background: rgba(255,255,255,.45);
+      transform: skewY(0deg);
+      clip-path: polygon(0 0, 100% 0, 50% 75%);
+      opacity:.85;
+    }
+
+    /* side triangles */
+    .env-left, .env-right{
+      position:absolute;
+      top:0; bottom:0;
+      width: 62%;
+      background: rgba(255,255,255,.32);
+      opacity:.75;
+    }
+    .env-left{
+      left:-12%;
+      clip-path: polygon(0 0, 100% 50%, 0 100%);
+    }
+    .env-right{
+      right:-12%;
+      clip-path: polygon(100% 0, 0 50%, 100% 100%);
+    }
+
+    /* flap */
+    .flap{
+      position:absolute;
+      left:0; right:0; top:-6px;
+      height: 62%;
+      background: rgba(255,255,255,.58);
+      clip-path: polygon(0 0, 100% 0, 50% 72%);
+      transform-origin: top center;
+      transform: rotateX(0deg);
+      transition: transform 900ms cubic-bezier(.2,.9,.2,1);
+      box-shadow: 0 10px 30px rgba(0,0,0,.08);
+    }
+
+    /* heart seal */
+    .seal{
+      position:absolute;
+      left:50%;
+      top: 58%;
+      transform: translate(-50%,-50%);
+      width: 64px;
+      height: 64px;
+      border-radius: 20px;
+      background: rgba(255,255,255,.55);
+      backdrop-filter: blur(10px);
+      border: 2px solid rgba(255,255,255,.65);
+      display:grid;
+      place-items:center;
+      box-shadow: 0 12px 30px rgba(0,0,0,.15);
+    }
+    .seal span{
+      font-size: 30px;
+      filter: drop-shadow(0 6px 10px rgba(0,0,0,.12));
+    }
+
+    /* letter */
+    .letter{
+      position:absolute;
+      left: 50%;
+      bottom: 14px;
+      transform: translateX(-50%);
+      width: 86%;
+      height: 88%;
+      background: rgba(255,250,246,.85);
+      border-radius: 22px;
+      box-shadow: 0 18px 60px var(--paperShadow);
+      border: 2px solid rgba(255,255,255,.7);
+      padding: 22px 18px;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:center;
+      gap: 10px;
+
+      /* hidden in envelope initially */
+      transform-origin: bottom center;
+      translate: 0 46%;
+      opacity: 0;
+      transition:
+        translate 900ms cubic-bezier(.2,.9,.2,1),
+        opacity 600ms ease;
+    }
+
+    .title-emoji{ font-size: 54px; line-height:1; }
+    .letter h1{
+      margin: 6px 0 0;
+      font-size: clamp(26px, 4vw, 40px);
+      text-align:center;
+      color: var(--text);
+    }
+    .letter p{
+      margin: 0 0 10px;
+      opacity:.9;
+      text-align:center;
+    }
 
     .buttons{
       display:flex;
       gap:14px;
       justify-content:center;
       flex-wrap:wrap;
-      margin-top: 12px;
+      margin-top: 4px;
       position: relative;
       min-height: 76px;
+      width: 100%;
     }
 
     button{
@@ -69,83 +210,112 @@
     }
     #yesBtn:hover{ transform: translateY(-1px) scale(1.02); }
 
-    /* NO is "impossible": can't be clicked or focused */
+    /* NO is impossible */
     #noBtn{
       background: white;
       color: var(--turq3);
       border: 2px solid #0aa59a33;
-      position: absolute;
+      position:absolute;
       left: 58%;
       top: 0;
-      pointer-events: none;   /* <- impossible to click */
+      pointer-events:none;
     }
 
     .msg{
-      margin-top: 10px;
-      font-weight: 800;
+      margin-top: 6px;
+      font-weight: 900;
       font-size: 18px;
       display:none;
+      color: var(--accentRed);
+      text-align:center;
     }
     .tiny{
       font-size: 12px;
       opacity: .75;
-      margin-top: 6px;
+      margin-top: 4px;
+      text-align:center;
     }
 
-    .confetti{
+    .music{
+      font-size: 12px;
+      opacity: .78;
+      margin-top: 10px;
+      display:none;
+      text-align:center;
+    }
+
+    /* Open state */
+    .opened .flap{ transform: rotateX(165deg); }
+    .opened .letter{
+      translate: 0 0;
+      opacity: 1;
+    }
+    .opened .seal{ opacity: 0; transition: opacity 250ms ease; }
+
+    /* Hearts canvas */
+    #hearts{
       position: fixed;
       inset: 0;
-      pointer-events:none;
-      display:none;
-    }
-
-    .musicHint{
-      margin-top: 14px;
-      font-size: 13px;
-      opacity: .8;
+      pointer-events: none;
       display:none;
     }
   </style>
 </head>
 <body>
-  <canvas class="confetti" id="confetti"></canvas>
+  <canvas id="hearts"></canvas>
 
-  <!-- YouTube embed: Autoplay usually requires a tap first -->
-  <iframe
-    id="yt"
-    width="0"
-    height="0"
-    style="position:fixed; left:-9999px; top:-9999px;"
-    frameborder="0"
-    allow="autoplay; encrypted-media"
-    allowfullscreen>
-  </iframe>
+  <div class="scene">
+    <div class="envelope-wrap">
+      <div class="envelope" id="envelope" role="button" aria-label="Open the envelope">
+        <div class="env-body"></div>
+        <div class="env-left"></div>
+        <div class="env-right"></div>
+        <div class="env-bottom"></div>
+        <div class="flap"></div>
 
-  <div class="card" aria-live="polite">
-    <div class="heart">💘</div>
-    <h1>Will you be my Valentine?</h1>
-    <p>One tiny question, a whole lot of love.</p>
+        <div class="seal"><span>💘</span></div>
 
-    <div class="buttons" id="btnArea">
-      <button id="yesBtn">Yes 💖</button>
-      <button id="noBtn" tabindex="-1" aria-hidden="true">No 🙈</button>
+        <div class="letter" id="letter" aria-live="polite">
+          <div class="title-emoji">💌</div>
+          <h1>Will you be my Valentine?</h1>
+          <p>One tiny question, a whole lot of love.</p>
+
+          <div class="buttons" id="btnArea">
+            <button id="yesBtn">Yes 💖</button>
+            <button id="noBtn" tabindex="-1" aria-hidden="true">No 🙈</button>
+          </div>
+
+          <div class="msg" id="msg">YAY!! 🥰 I love you ❤️</div>
+          <div class="tiny" id="tiny"></div>
+          <div class="music" id="music">🎵 Playing a little love song…</div>
+        </div>
+      </div>
+
+      <div class="hint" id="hint">Tap the envelope to open 💌</div>
     </div>
-
-    <div class="msg" id="msg">YAY!! 🥰 I love you ❤️</div>
-    <div class="tiny" id="tiny"></div>
-
-    <div class="musicHint" id="musicHint">🎵 Playing your song…</div>
   </div>
 
 <script>
-  const yesBtn = document.getElementById("yesBtn");
-  const noBtn  = document.getElementById("noBtn");
-  const btnArea = document.getElementById("btnArea");
-  const msg = document.getElementById("msg");
-  const tiny = document.getElementById("tiny");
-  const musicHint = document.getElementById("musicHint");
+  // ---------------- Envelope open + audio unlock ----------------
+  const envelope = document.getElementById("envelope");
+  const hint = document.getElementById("hint");
+  const musicLabel = document.getElementById("music");
 
-  // --- Make the NO button "impossible" AND constantly dodging
+  let opened = false;
+
+  envelope.addEventListener("click", () => {
+    if (!opened) {
+      opened = true;
+      envelope.classList.add("opened");
+      hint.textContent = "Now answer the question 😄";
+    }
+    // Unlock audio on first user gesture
+    startLoveSong();
+  });
+
+  // ---------------- No button impossible & dodging for fun ----------------
+  const noBtn = document.getElementById("noBtn");
+  const btnArea = document.getElementById("btnArea");
   function moveNoButton() {
     const area = btnArea.getBoundingClientRect();
     const btn = noBtn.getBoundingClientRect();
@@ -159,49 +329,31 @@
     noBtn.style.left = x + "px";
     noBtn.style.top  = y + "px";
   }
-
-  // Move often + whenever the area is touched/moused over
   let dodgeTimer = setInterval(moveNoButton, 180);
   btnArea.addEventListener("mousemove", moveNoButton);
   btnArea.addEventListener("touchstart", moveNoButton, {passive:true});
 
-  // --- Music: Your YouTube link's video ID
-  const VIDEO_ID = "3V726_HShyY";
-  const yt = document.getElementById("yt");
+  // ---------------- Hearts fall after YES ----------------
+  const yesBtn = document.getElementById("yesBtn");
+  const msg = document.getElementById("msg");
+  const tiny = document.getElementById("tiny");
 
-  function startMusic() {
-    // loop requires playlist param = same video id
-    yt.src = `https://www.youtube.com/embed/${VIDEO_ID}?autoplay=1&loop=1&playlist=${VIDEO_ID}`;
-    musicHint.style.display = "block";
-  }
-
-  // Start music on first tap/click anywhere (autoplay policies)
-  let musicStarted = false;
-  function unlockAudio() {
-    if (musicStarted) return;
-    musicStarted = true;
-    startMusic();
-    window.removeEventListener("pointerdown", unlockAudio);
-    window.removeEventListener("touchstart", unlockAudio);
-  }
-  window.addEventListener("pointerdown", unlockAudio, {once:false});
-  window.addEventListener("touchstart", unlockAudio, {once:false, passive:true});
-
-  // --- YES celebration
   yesBtn.addEventListener("click", () => {
     msg.style.display = "block";
     tiny.textContent = "Screenshot this and send it to me 😘";
-    launchConfetti();
 
     clearInterval(dodgeTimer);
-    btnArea.style.opacity = "0.15";
+    btnArea.style.opacity = "0.18";
     btnArea.style.pointerEvents = "none";
+
+    launchHearts();
+    startLoveSong(); // ensure music starts if not already
   });
 
-  // --- Confetti
-  const canvas = document.getElementById("confetti");
+  const canvas = document.getElementById("hearts");
   const ctx = canvas.getContext("2d");
-  let pieces = [];
+  let hearts = [];
+  let animating = false;
 
   function resize() {
     canvas.width = window.innerWidth;
@@ -210,51 +362,158 @@
   window.addEventListener("resize", resize);
   resize();
 
-  function launchConfetti() {
-    canvas.style.display = "block";
-    pieces = Array.from({length: 180}, () => ({
-      x: Math.random() * canvas.width,
-      y: -20 - Math.random() * canvas.height * 0.2,
-      r: 4 + Math.random() * 6,
-      vy: 2 + Math.random() * 5,
-      vx: -2 + Math.random() * 4,
-      rot: Math.random() * Math.PI,
-      vr: -0.15 + Math.random() * 0.3
-    }));
-    requestAnimationFrame(tick);
-    setTimeout(() => canvas.style.display = "none", 3800);
+  function rand(min, max){ return min + Math.random() * (max - min); }
+
+  function heartPath(ctx, x, y, size){
+    // Simple heart shape using bezier curves
+    const s = size;
+    ctx.beginPath();
+    ctx.moveTo(x, y + s * 0.35);
+    ctx.bezierCurveTo(x, y, x - s, y, x - s, y + s * 0.35);
+    ctx.bezierCurveTo(x - s, y + s * 0.75, x - s * 0.35, y + s, x, y + s * 1.18);
+    ctx.bezierCurveTo(x + s * 0.35, y + s, x + s, y + s * 0.75, x + s, y + s * 0.35);
+    ctx.bezierCurveTo(x + s, y, x, y, x, y + s * 0.35);
+    ctx.closePath();
   }
 
-  function tick() {
+  function launchHearts(){
+    canvas.style.display = "block";
+    hearts = Array.from({length: 160}, () => ({
+      x: rand(0, canvas.width),
+      y: rand(-canvas.height * 0.2, canvas.height * 0.3) * -1,
+      s: rand(6, 14),
+      vy: rand(1.5, 4.8),
+      vx: rand(-1.2, 1.2),
+      wobble: rand(0, Math.PI * 2),
+      wobbleSpeed: rand(0.02, 0.06),
+      rot: rand(0, Math.PI * 2),
+      vr: rand(-0.03, 0.03),
+      alpha: rand(0.65, 0.95),
+      color: `hsl(${rand(345, 360)}, ${rand(75, 95)}%, ${rand(55, 65)}%)`
+    }));
+
+    if (!animating){
+      animating = true;
+      requestAnimationFrame(tickHearts);
+      setTimeout(() => {
+        canvas.style.display = "none";
+        animating = false;
+      }, 4200);
+    }
+  }
+
+  function tickHearts(){
+    if (!animating) return;
+
     ctx.clearRect(0,0,canvas.width, canvas.height);
-    for (const p of pieces) {
-      p.x += p.vx;
-      p.y += p.vy;
-      p.rot += p.vr;
+
+    for (const h of hearts){
+      h.wobble += h.wobbleSpeed;
+      h.x += h.vx + Math.sin(h.wobble) * 0.6;
+      h.y += h.vy;
+      h.rot += h.vr;
+
       ctx.save();
-      ctx.translate(p.x, p.y);
-      ctx.rotate(p.rot);
-      ctx.beginPath();
-      ctx.roundRect(-p.r, -p.r, p.r*2, p.r*2, 2);
+      ctx.globalAlpha = h.alpha;
+      ctx.translate(h.x, h.y);
+      ctx.rotate(h.rot);
+      ctx.fillStyle = h.color;
+      heartPath(ctx, 0, 0, h.s);
       ctx.fill();
       ctx.restore();
     }
-    pieces = pieces.filter(p => p.y < canvas.height + 40);
-    if (pieces.length) requestAnimationFrame(tick);
+
+    hearts = hearts.filter(h => h.y < canvas.height + 60);
+    if (hearts.length) requestAnimationFrame(tickHearts);
   }
 
-  // roundRect polyfill for older browsers
-  if (!CanvasRenderingContext2D.prototype.roundRect) {
-    CanvasRenderingContext2D.prototype.roundRect = function(x,y,w,h,r){
-      r = Math.min(r, w/2, h/2);
-      this.moveTo(x+r,y);
-      this.arcTo(x+w,y,x+w,y+h,r);
-      this.arcTo(x+w,y+h,x,y+h,r);
-      this.arcTo(x,y+h,x,y,r);
-      this.arcTo(x,y,x+w,y,r);
-      this.closePath();
-      return this;
-    };
+  // ---------------- Romantic song (copyright-safe Web Audio) ----------------
+  // Gentle "love theme" arpeggio + melody using synth (no external files).
+  let audioStarted = false;
+  let audioCtx, masterGain, timerId;
+
+  function startLoveSong(){
+    if (audioStarted) return;
+    audioStarted = true;
+
+    try {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      masterGain = audioCtx.createGain();
+      masterGain.gain.value = 0.12; // overall volume
+      masterGain.connect(audioCtx.destination);
+
+      musicLabel.style.display = "block";
+
+      // Chords (romantic progression in C major-ish): Am - F - C - G
+      const chords = [
+        ["A3","C4","E4"],
+        ["F3","A3","C4"],
+        ["C3","E3","G3"],
+        ["G2","B2","D3"]
+      ];
+
+      // Melody notes (simple, sweet)
+      const melody = ["E4","G4","A4","G4","E4","D4","E4","G4","A4","C5","B4","G4"];
+
+      const bpm = 72;
+      const beat = 60 / bpm;
+      let step = 0;
+
+      function noteToFreq(note){
+        const map = {C:0, D:2, E:4, F:5, G:7, A:9, B:11};
+        const m = /^([A-G])(#?)(\d)$/.exec(note);
+        const n = m[1];
+        const sharp = m[2] === "#" ? 1 : 0;
+        const oct = parseInt(m[3],10);
+        const midi = (oct + 1) * 12 + map[n] + sharp;
+        return 440 * Math.pow(2, (midi - 69) / 12);
+      }
+
+      function playTone(freq, t, dur, type="sine", gain=0.18){
+        const o = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+
+        o.type = type;
+        o.frequency.setValueAtTime(freq, t);
+
+        // Soft envelope
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(gain, t + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+
+        o.connect(g);
+        g.connect(masterGain);
+
+        o.start(t);
+        o.stop(t + dur + 0.05);
+      }
+
+      function tick(){
+        const t = audioCtx.currentTime + 0.02;
+
+        const chord = chords[Math.floor(step / 4) % chords.length];
+        const arpIndex = step % 4;
+
+        // arpeggio: chord tones
+        const arpNote = chord[arpIndex % chord.length];
+        playTone(noteToFreq(arpNote), t, beat * 0.95, "triangle", 0.10);
+
+        // bass every 2 beats
+        if (step % 2 === 0){
+          playTone(noteToFreq(chord[0]), t, beat * 1.8, "sine", 0.08);
+        }
+
+        // melody every beat
+        const melNote = melody[step % melody.length];
+        playTone(noteToFreq(melNote), t, beat * 0.9, "sine", 0.07);
+
+        step++;
+      }
+
+      timerId = setInterval(tick, beat * 1000);
+    } catch (e) {
+      // If audio fails, quietly ignore.
+    }
   }
 </script>
 </body>
