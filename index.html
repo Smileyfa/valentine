@@ -5,15 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>💘 Will you be my Valentine?</title>
   <style>
-    :root { --bg1:#ff9a9e; --bg2:#fad0c4; --card:#ffffffcc; --text:#2b2b2b; }
-    * { box-sizing: border-box; }
+    :root{
+      --turq1:#bff7f2;
+      --turq2:#18c5b7;
+      --turq3:#0aa59a;
+      --card:#ffffffcc;
+      --text:#0b2b2b;
+    }
+    *{ box-sizing:border-box; }
     body{
       margin:0;
       min-height:100vh;
       display:flex;
       align-items:center;
       justify-content:center;
-      background: radial-gradient(circle at top, var(--bg2), var(--bg1));
+      background: radial-gradient(circle at top, var(--turq1), var(--turq2));
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       color:var(--text);
       overflow:hidden;
@@ -29,66 +35,91 @@
       text-align:center;
       position:relative;
     }
+    .heart{ font-size: 52px; line-height:1; }
     h1{ margin: 8px 0 6px; font-size: clamp(28px, 4vw, 40px); }
     p{ margin: 0 0 18px; opacity:.9; }
-    .heart{ font-size: 52px; line-height:1; }
+
     .buttons{
       display:flex;
-      gap: 14px;
+      gap:14px;
       justify-content:center;
       flex-wrap:wrap;
       margin-top: 12px;
       position: relative;
-      min-height: 64px;
+      min-height: 74px; /* room for the escaping button */
     }
+
     button{
       border:none;
       border-radius: 14px;
       padding: 14px 18px;
-      font-weight: 700;
+      font-weight: 800;
       font-size: 16px;
       cursor:pointer;
       transition: transform .15s ease, box-shadow .15s ease;
       box-shadow: 0 10px 18px rgba(0,0,0,.12);
+      user-select:none;
+      -webkit-tap-highlight-color: transparent;
     }
     button:active{ transform: translateY(1px) scale(.99); }
+
     #yesBtn{
-      background: #ff3b7a;
-      color:white;
+      background: var(--turq3);
+      color: white;
     }
     #yesBtn:hover{ transform: translateY(-1px) scale(1.02); }
+
+    /* NO is "impossible": can't be clicked or focused */
     #noBtn{
-      background: #ffffff;
-      color:#ff3b7a;
-      border: 2px solid #ff3b7a33;
-      position: relative;
+      background: white;
+      color: var(--turq3);
+      border: 2px solid #0aa59a33;
+      position: absolute;
+      left: 58%;
+      top: 0;
+      pointer-events: none;   /* <-- makes it impossible to click */
     }
-    .note{
-      margin-top: 18px;
-      font-size: 13px;
-      opacity:.75;
+
+    .msg{
+      margin-top: 10px;
+      font-weight: 800;
+      font-size: 18px;
+      display:none;
     }
+    .tiny{
+      font-size: 12px;
+      opacity: .75;
+      margin-top: 6px;
+    }
+
     .confetti{
       position: fixed;
       inset: 0;
       pointer-events:none;
       display:none;
     }
-    .msg{
-      margin-top: 10px;
-      font-weight: 700;
-      font-size: 18px;
-      display:none;
-    }
-    .tiny{
-      font-size: 12px;
-      opacity: .7;
-      margin-top: 6px;
+
+    /* Music overlay (optional visible hint) */
+    .musicHint{
+      margin-top: 14px;
+      font-size: 13px;
+      opacity: .8;
     }
   </style>
 </head>
 <body>
   <canvas class="confetti" id="confetti"></canvas>
+
+  <!-- YouTube embed for "As" (note: autoplay with sound may require a tap first) -->
+  <iframe
+    id="yt"
+    width="0"
+    height="0"
+    style="position:fixed; left:-9999px; top:-9999px;"
+    frameborder="0"
+    allow="autoplay; encrypted-media"
+    allowfullscreen>
+  </iframe>
 
   <div class="card" aria-live="polite">
     <div class="heart">💘</div>
@@ -97,13 +128,15 @@
 
     <div class="buttons" id="btnArea">
       <button id="yesBtn">Yes 💖</button>
-      <button id="noBtn">No 🙈</button>
+      <button id="noBtn" tabindex="-1" aria-hidden="true">No 🙈</button>
     </div>
 
     <div class="msg" id="msg">YAY!! 🥰 I love you ❤️</div>
     <div class="tiny" id="tiny"></div>
 
-    <div class="note">Tip: Tap “No” if you want to see it try to escape 😄</div>
+    <div class="musicHint" id="musicHint" style="display:none;">
+      🎵 Playing: “As”
+    </div>
   </div>
 
 <script>
@@ -112,44 +145,70 @@
   const btnArea = document.getElementById("btnArea");
   const msg = document.getElementById("msg");
   const tiny = document.getElementById("tiny");
+  const musicHint = document.getElementById("musicHint");
 
-  // Make "No" button dodge the cursor/taps
+  // --- Make the NO button "impossible" AND hilarious: it constantly teleports away
   function moveNoButton() {
     const area = btnArea.getBoundingClientRect();
     const btn = noBtn.getBoundingClientRect();
 
-    const maxX = area.width - btn.width;
-    const maxY = area.height - btn.height;
+    const maxX = Math.max(0, area.width - btn.width);
+    const maxY = Math.max(0, area.height - btn.height);
 
-    const x = Math.random() * Math.max(0, maxX);
-    const y = Math.random() * Math.max(0, maxY);
+    const x = Math.random() * maxX;
+    const y = Math.random() * maxY;
 
-    noBtn.style.position = "absolute";
     noBtn.style.left = x + "px";
     noBtn.style.top  = y + "px";
   }
 
-  // Desktop hover + mobile tap
-  noBtn.addEventListener("mouseenter", moveNoButton);
-  noBtn.addEventListener("click", (e) => {
-    e.preventDefault();
-    moveNoButton();
-  });
+  // Keep moving it often + whenever pointer gets near the buttons area
+  let dodgeTimer = setInterval(moveNoButton, 220);
+  btnArea.addEventListener("mousemove", moveNoButton);
+  btnArea.addEventListener("touchstart", moveNoButton, {passive:true});
 
-  // YES celebration
+  // --- Music: YouTube embed (autoplay usually needs a user gesture)
+  // IMPORTANT: Replace VIDEO_ID below with the correct YouTube video id you want to use.
+  // To get it: open the YouTube video → the URL looks like https://www.youtube.com/watch?v=VIDEO_ID
+  const VIDEO_ID = "https://www.youtube.com/watch?v=5PMiSKCETb0";
+  const yt = document.getElementById("yt");
+  function startMusic() {
+    if (VIDEO_ID === "https://www.youtube.com/watch?v=5PMiSKCETb0") return; // no-op until you set it
+    yt.src = `https://www.youtube.com/embed/${VIDEO_ID}?autoplay=1&loop=1&playlist=${VIDEO_ID}`;
+    musicHint.style.display = "block";
+  }
+
+  // Start music on first tap/click anywhere (works around autoplay blocking)
+  let musicStarted = false;
+  function unlockAudio() {
+    if (musicStarted) return;
+    musicStarted = true;
+    startMusic();
+    window.removeEventListener("pointerdown", unlockAudio);
+    window.removeEventListener("touchstart", unlockAudio);
+  }
+  window.addEventListener("pointerdown", unlockAudio, {once:false});
+  window.addEventListener("touchstart", unlockAudio, {once:false, passive:true});
+
+  // --- YES celebration
   yesBtn.addEventListener("click", () => {
     msg.style.display = "block";
     tiny.textContent = "Screenshot this and send it to me 😘";
     launchConfetti();
-    // Hide buttons after yes (optional)
+
+    // Stop the NO dodging once she said yes
+    clearInterval(dodgeTimer);
+
+    // Dim buttons
     btnArea.style.opacity = "0.15";
     btnArea.style.pointerEvents = "none";
   });
 
-  // Simple confetti
+  // --- Simple confetti
   const canvas = document.getElementById("confetti");
   const ctx = canvas.getContext("2d");
   let pieces = [];
+
   function resize() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
